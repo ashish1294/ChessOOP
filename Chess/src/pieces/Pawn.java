@@ -10,7 +10,7 @@ import chess.Cell;
  */
 public class Pawn extends Piece{
 	
-	//COnstructors
+	//Constructors
 	public Pawn(String i,String p,int c)
 	{
 		setId(i);

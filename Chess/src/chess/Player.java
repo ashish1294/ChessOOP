@@ -1,5 +1,6 @@
-package statistics;
+package chess;
 
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -22,16 +23,15 @@ import javax.swing.JOptionPane;
 public class Player implements Serializable{
 	
 	private static final long serialVersionUID = 1L;
-	private String firstname;
-	private String lastname;
+	private String name;
 	private Integer gamesplayed;
 	private Integer gameswon;
 	
 	//Constructor
-	Player(String fname,String lname)
+	public Player(String name)
 	{
-		this.firstname = new String(fname);
-		this.lastname = new String(lname);
+		this.name = name.trim();
+		//this.lname = lname.trim();
 		gamesplayed = new Integer(0);
 		gameswon = new Integer(0);
 	}
@@ -39,7 +39,7 @@ public class Player implements Serializable{
 	//Name Getter
 	public String name()
 	{
-		return new String(firstname + " " +lastname);
+		return name;
 	}
 	
 	//Returns the number of games played
@@ -60,16 +60,40 @@ public class Player implements Serializable{
 		return new Integer((gameswon*100)/gamesplayed);
 	}
 	
-	public ArrayList<Player> fetch_players()         //Function to fetch the list of the players
+	//Increments the number of games played
+	public void updateGamesPlayed()
 	{
+		gamesplayed++;
+	}
+	
+	//Increments the number of games won
+	public void updateGamesWon()
+	{
+		gameswon++;
+	}
+	
+	
+	public static ArrayList<Player> fetch_players()         //Function to fetch the list of the players
+	{
+		Player tempplayer;
 		ObjectInputStream input = null;
 		ArrayList<Player> players = new ArrayList<Player>();
 		try
 		{
-			input = new ObjectInputStream(new FileInputStream("chessgamedata.dat"));
-			while(input.available()>0)
-				players.add((Player)input.readObject());
-			input.close();
+			File infile = new File(System.getProperty("user.dir")+ File.separator + "chessgamedata.dat");
+			input = new ObjectInputStream(new FileInputStream(infile));
+			try
+			{
+				while(true)
+				{
+					tempplayer = (Player) input.readObject();
+					players.add(tempplayer);
+				}
+			}
+			catch(EOFException e)
+			{
+				input.close();
+			}
 		}
 		catch (FileNotFoundException e)
 		{
@@ -86,40 +110,69 @@ public class Player implements Serializable{
 		{
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(null, "Game Data File Corrupted !! Click Ok to Continue Builing New File");
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 		return players;
 	}
 	
-	private void Update_Player()            //Function to update the statistics of a player
+	public void Update_Player()            //Function to update the statistics of a player
 	{
 		ObjectInputStream input = null;
 		ObjectOutputStream output = null;
 		Player temp_player;
-		File inputfile = new File("gamefiles/chessgamedata.dat");
-		File outputfile = new File("gamefiles/tempfile");
+		File inputfile=null;
+		File outputfile=null;
+		try
+		{
+			inputfile = new File(System.getProperty("user.dir")+ File.separator + "chessgamedata.dat");
+			outputfile = new File(System.getProperty("user.dir")+ File.separator + "tempfile.dat");
+		} catch (SecurityException e)
+		{
+			JOptionPane.showMessageDialog(null, "Read-Write Permission Denied !! Program Cannot Start");
+			System.exit(0);
+		} 
 		boolean playerdonotexist;
 		try
 		{
-			if(inputfile.exists()==false)
-				inputfile.createNewFile();
 			if(outputfile.exists()==false)
 				outputfile.createNewFile();
-			input = new ObjectInputStream(new FileInputStream(inputfile));
-			output = new ObjectOutputStream(new FileOutputStream(outputfile));
-			playerdonotexist=true;
-			while(input.available()>0)
+			if(inputfile.exists()==false)
 			{
-				temp_player = (Player)input.readObject();
-				if (temp_player.name().equals(name()))
-				{
+					output = new ObjectOutputStream(new java.io.FileOutputStream(outputfile,true));
 					output.writeObject(this);
-					playerdonotexist = false;
-				}
-				else
-					output.writeObject(temp_player);
 			}
-			if(playerdonotexist)
-				output.writeObject(this);
+			else
+			{
+				input = new ObjectInputStream(new FileInputStream(inputfile));
+				output = new ObjectOutputStream(new FileOutputStream(outputfile));
+				playerdonotexist=true;
+				try
+				{
+				while(true)
+				{
+					temp_player = (Player)input.readObject();
+					if (temp_player.name().equals(name()))
+					{
+						output.writeObject(this);
+						playerdonotexist = false;
+					}
+					else
+						output.writeObject(temp_player);
+				}
+				}
+				catch(EOFException e){
+					input.close();
+				}
+				if(playerdonotexist)
+					output.writeObject(this);
+			}
+			inputfile.delete();
+			output.close();
+			File newf = new File(System.getProperty("user.dir")+ File.separator + "chessgamedata.dat");
+			if(outputfile.renameTo(newf)==false)
+				System.out.println("File Renameing Unsuccessful");
 		}
 		catch (FileNotFoundException e)
 		{
@@ -135,10 +188,9 @@ public class Player implements Serializable{
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(null, "Game Data File Corrupted !! Click Ok to Continue Builing New File");
 		}
-		finally
+		catch (Exception e)
 		{
-			try {input.close();output.close();}
-			catch (IOException e) {e.printStackTrace();}
+			
 		}
 	}
 }
