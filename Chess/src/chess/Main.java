@@ -63,11 +63,11 @@ public class Main extends JFrame implements MouseListener
 	private ArrayList<String> Bnames=new ArrayList<String>();
 	private JComboBox<String> wcombo,bcombo;
 	private String wname=null,bname=null,winner=null;
-	static String move="White";
+	static String move;
 	private Player tempPlayer;
 	private JScrollPane wscroll,bscroll;
 	private String[] WNames={},BNames={};
-	private JSlider timeSlider=new  JSlider();
+	private JSlider timeSlider;
 	private BufferedImage image;
 	private Button start,wselect,bselect,WNewPlayer,BNewPlayer;
 	public static int timeRemaining=60;
@@ -107,6 +107,20 @@ public class Main extends JFrame implements MouseListener
 	//Constructor
 	private Main()
     {
+		timeRemaining=60;
+		timeSlider = new JSlider();
+		move="White";
+		wname=null;
+		bname=null;
+		winner=null;
+		board=new JPanel(new GridLayout(8,8));
+		wdetails=new JPanel(new GridLayout(3,3));
+		bdetails=new JPanel(new GridLayout(3,3));
+		bcombopanel=new JPanel();
+		wcombopanel=new JPanel();
+		Wnames=new ArrayList<String>();
+		Bnames=new ArrayList<String>();
+		board.setMinimumSize(new Dimension(800,700));
 		ImageIcon img = new ImageIcon(this.getClass().getResource("icon.png"));
 		this.setIconImage(img.getImage());
 		
@@ -118,6 +132,7 @@ public class Main extends JFrame implements MouseListener
 		timeSlider.setPaintLabels(true);
 		timeSlider.setPaintTicks(true);
 		timeSlider.addChangeListener(new TimeChange());
+		
 		
 		//Fetching Details of all Players
 		wplayer= Player.fetch_players();
@@ -247,8 +262,6 @@ public class Main extends JFrame implements MouseListener
 		setTime.setFont(new Font("Arial",Font.BOLD,16));
 		label = new JLabel("Time Starts now", JLabel.CENTER);
 		  label.setFont(new Font("SERIF", Font.BOLD, 30));
-		  
-	      //t.start();
 	      displayTime=new JPanel(new FlowLayout());
 	      time=new JPanel(new GridLayout(3,3));
 	      time.add(setTime);
@@ -279,7 +292,7 @@ public class Main extends JFrame implements MouseListener
 		split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,temp, controlPanel);
 		
 	    content.add(split);
-		 setDefaultCloseOperation(EXIT_ON_CLOSE);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
 	
 	// A function to change the chance from White Player to Black Player or vice verse
@@ -297,7 +310,7 @@ public class Main extends JFrame implements MouseListener
 			previous.deselect();
 		previous=null;
 		chance^=1;
-		if(!end)
+		if(!end && timer!=null)
 		{
 			timer.reset();
 			timer.start();
@@ -451,6 +464,11 @@ public class Main extends JFrame implements MouseListener
     @SuppressWarnings("deprecation")
 	private void gameend()
     {
+    	cleandestinations(destinationlist);
+    	displayTime.disable();
+    	timer.countdownTimer.stop();
+    	if(previous!=null)
+    		previous.removePiece();
     	if(chance==0)
 		{	White.updateGamesWon();
 			White.Update_Player();
@@ -462,7 +480,6 @@ public class Main extends JFrame implements MouseListener
 			Black.Update_Player();
 			winner=Black.name();
 		}
-			
 		JOptionPane.showMessageDialog(board,"Checkmate!!!\n"+winner+" wins");
 		WhitePlayer.remove(wdetails);
 		BlackPlayer.remove(bdetails);
@@ -481,6 +498,11 @@ public class Main extends JFrame implements MouseListener
 		wselect.enable();
 		bselect.enable();
 		end=true;
+		Mainboard.disable();
+		Mainboard.dispose();
+		Mainboard = new Main();
+		Mainboard.setVisible(true);
+		Mainboard.setResizable(false);
     }
     
     //These are the abstract function of the parent class. Only relevant method here is the On-Click Fuction
@@ -527,7 +549,6 @@ public class Main extends JFrame implements MouseListener
 					if(c.getpiece()!=null)
 						c.removePiece();
 					c.setPiece(previous.getpiece());
-					
 					if (previous.ischeck())
 						previous.removecheck();
 					previous.removePiece();
@@ -536,6 +557,9 @@ public class Main extends JFrame implements MouseListener
 						boardState[getKing(chance^1).getx()][getKing(chance^1).gety()].setcheck();
 						if (checkmate(getKing(chance^1).getcolor()))
 						{
+							previous.deselect();
+							if(previous.getpiece()!=null)
+								previous.removePiece();
 							gameend();
 						}
 					}
