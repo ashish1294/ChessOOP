@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "Chess"
+		}
+	],
+	"settings": {
+		"java.format.settings.url": "eclipse-formatter.xml",
+		"java.dependency.packagePresentation": "flat"
+	}
+}

@@ -20,7 +20,7 @@ public class Time {
    public Time(JLabel passedLabel) {
       countdownTimer = new Timer(1000, new CountdownTimerListener());
       this.label = passedLabel;
-      Timerem = Main.timeRemaining;
+      Timerem = Controller.timeRemaining;
    }
 
    // A function that starts the timer
@@ -30,7 +30,7 @@ public class Time {
 
    // A function that resets the timer
    public void reset() {
-      Timerem = Main.timeRemaining;
+      Timerem = Controller.timeRemaining;
    }
 
    // A function that is called after every second. It updates the timer and takes
