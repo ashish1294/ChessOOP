@@ -235,13 +235,13 @@ public class Main extends JFrame implements MouseListener
 				else if(i==7&&j==5)
 					P=wb02;
 				else if(i==0&&j==3)
-					P=bk;
-				else if(i==0&&j==4)
 					P=bq;
+				else if(i==0&&j==4)
+					P=bk;
 				else if(i==7&&j==3)
-					P=wk;
-				else if(i==7&&j==4)
 					P=wq;
+				else if(i==7&&j==4)
+					P=wk;
 				else if(i==1)
 				P=bp[j];
 				else if(i==6)
